@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub Contribution Arcade",
+  "version": "1.0.0",
+  "description": "Turn any GitHub contribution graph into a Minecraft underground mine shaft. Your busiest days dig the deepest — iron, gold, lava.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": [
+        "src/extract.js",
+        "src/minecraft.js",
+        "src/launcher.js"
+      ],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

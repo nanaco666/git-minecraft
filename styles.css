@@ -1,0 +1,100 @@
+/* ============================================================
+   GitHub Contribution Arcade — shared + per-game styles
+   ============================================================ */
+
+/* ---- shared buttons ---- */
+.gca-btn {
+  font: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  padding: 7px 13px; color: #fff;
+  background: #2da44e; border: none;
+  border-bottom: 3px solid #1f7a37; border-radius: 6px;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.25);
+}
+.gca-btn:hover { filter: brightness(1.08); }
+.gca-btn:active { border-bottom-width: 1px; transform: translateY(2px); }
+.gca-btn.ghost { background: #2b3137; border-bottom-color: #15191d; }
+
+/* ---- launch bar above the contribution graph ---- */
+.gca-launch-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  margin: 10px 0 14px;
+}
+.gca-launch-label { font-size: 13px; font-weight: 600; opacity: 0.85; }
+.gca-launch-btn { font-size: 13px; }
+
+/* ---- full-screen game overlay ---- */
+.gca-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  display: flex; flex-direction: column;
+  background: #0d1117;
+  font-family: -apple-system, "Segoe UI", Roboto, "PingFang SC", sans-serif;
+  color: #e6edf3;
+}
+.gca-overlay-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: rgba(20,26,22,0.9);
+  border-bottom: 2px solid rgba(0,0,0,0.45);
+}
+.gca-overlay-title { font-weight: 800; letter-spacing: 0.5px; text-shadow: 2px 2px 0 #000; }
+.gca-close { font-size: 13px; }
+.gca-stage { position: relative; flex: 1; overflow: hidden; }
+
+/* inline mode: a game window dropped in place of the contribution graph */
+.gca-inline-wrap { margin: 10px 0 14px; }
+.gca-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.gca-toolbar-title { font-weight: 700; font-size: 14px; opacity: 0.9; }
+.gca-inline {
+  position: relative; height: 460px; max-width: 100%;
+  background: #0d1117; border-radius: 8px; overflow: hidden;
+}
+
+/* per-game mount point: fills its parent (inline window or fullscreen stage).
+   Minesweeper centers its board via flex; Minecraft's canvas is absolute. */
+.gca-game-host {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+
+/* ============================================================
+   Minecraft (gmc-*)
+   ============================================================ */
+/* host positioning comes from .gca-game-host; gmc-* children anchor to it */
+.gmc-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+.gmc-canvas:active { cursor: grabbing; }
+.gmc-bar {
+  position: absolute; left: 14px; bottom: 14px; z-index: 2;
+  display: flex; gap: 6px;
+}
+.gmc-bar .gca-btn { padding: 8px 11px; }
+.gmc-legend {
+  position: absolute; right: 14px; bottom: 14px; z-index: 2;
+  background: rgba(20,26,22,0.82); border-radius: 6px; padding: 8px 11px;
+  font-size: 11px; line-height: 1.7; backdrop-filter: blur(6px);
+}
+.gmc-legend b { font-size: 12px; }
+.gmc-legend .row { display: flex; align-items: center; gap: 6px; }
+.gmc-legend .sw { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+.gmc-tip {
+  position: absolute; z-index: 3; pointer-events: none; display: none;
+  padding: 5px 8px; font-size: 12px; border-radius: 4px;
+  background: #000; color: #fff; border: 1px solid #444;
+  transform: translate(-50%, -130%); white-space: nowrap;
+}
+.gmc-loot {
+  position: absolute; right: 14px; top: 14px; z-index: 2; min-width: 116px;
+  background: rgba(20,26,22,0.82); border-radius: 6px; padding: 9px 12px;
+  font-size: 11px; line-height: 1.8; backdrop-filter: blur(6px); color: #e6edf3;
+}
+.gmc-loot b { font-size: 12px; display: block; margin-bottom: 2px; }
+.gmc-loot .row { display: flex; align-items: center; gap: 6px; }
+.gmc-loot .row .nm { opacity: 0.9; }
+.gmc-loot .row .n { margin-left: auto; font-weight: 700; font-variant-numeric: tabular-nums; }
+.gmc-loot .sw { width: 12px; height: 12px; border-radius: 2px; display: inline-block; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3); }
+.gmc-loot .score {
+  margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(255,255,255,0.12);
+  font-weight: 800; font-size: 14px; color: #ffd54f; text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+}
+.gmc-loot .hint { opacity: 0.6; }
+.gmc-loot .pop { animation: gmcPop 0.32s ease; transform-origin: left center; }
+@keyframes gmcPop { 0% { transform: scale(1); } 40% { transform: scale(1.3); } 100% { transform: scale(1); } }

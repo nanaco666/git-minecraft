@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mock GitHub Profile — Arcade test harness</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin: 24px; color: #1f2328; background:#fff; }
+  h2 { font-size: 16px; font-weight: 600; }
+  table.ContributionCalendar-grid { border-spacing: 3px; border-collapse: separate; }
+  td.ContributionCalendar-day { width: 11px; height: 11px; border-radius: 2px; outline: 1px solid rgba(27,31,35,0.06); outline-offset: -1px; }
+  td[data-level="0"] { background:#ebedf0; } td[data-level="1"]{ background:#9be9a8; }
+  td[data-level="2"]{ background:#40c463; } td[data-level="3"]{ background:#30a14e; } td[data-level="4"]{ background:#216e39; }
+  tool-tip { display: none; }
+  #log { margin-top: 16px; font: 12px/1.5 ui-monospace, monospace; white-space: pre-wrap; color:#555; }
+</style>
+</head>
+<body>
+  <div class="js-yearly-contributions">
+    <h2 id="heading">contributions</h2>
+    <table class="ContributionCalendar-grid js-calendar-graph-table"><tbody id="cal"></tbody></table>
+  </div>
+  <div id="tips"></div>
+  <div id="log"></div>
+
+<script>
+  // build a full 53-week year with tool-tips carrying the contribution count
+  (function () {
+    const cal = document.getElementById('cal'), tips = document.getElementById('tips');
+    const rows = []; for (let r=0;r<7;r++){ const tr=document.createElement('tr'); rows.push(tr); cal.appendChild(tr); }
+    const start = new Date('2025-06-15T00:00:00'); // Sunday
+    const end = new Date('2026-06-14T00:00:00');
+    let seed = 999, total = 0;
+    const rnd = () => (seed=(seed*1103515245+12345)&0x7fffffff)/0x7fffffff;
+    let i = 0;
+    for (let t=start.getTime(); t<=end.getTime(); t+=86400000) {
+      const d = new Date(t), iso = d.toISOString().slice(0,10);
+      const x = rnd(); let level=0;
+      if (x>0.5) level=1; if (x>0.72) level=2; if (x>0.87) level=3; if (x>0.95) level=4;
+      const count = level===0 ? 0 : level*4 + ((rnd()*5)|0);
+      total += count;
+      const td = document.createElement('td');
+      td.className='ContributionCalendar-day'; td.id='c-'+i;
+      td.setAttribute('data-date', iso); td.setAttribute('data-level', String(level));
+      rows[d.getDay()].appendChild(td);
+      const tip = document.createElement('tool-tip'); tip.setAttribute('for','c-'+i);
+      tip.textContent = (count===0?'No contributions':count+' contributions')+' on '+iso+'.';
+      tips.appendChild(tip);
+      i++;
+    }
+    document.getElementById('heading').textContent = total+' contributions in the last year';
+  })();
+</script>
+<script src="../src/extract.js"></script>
+<script src="../src/minecraft.js"></script>
+<script src="../src/launcher.js"></script>
+<script>
+  window.addEventListener('load', () => setTimeout(() => {
+    const cells = window.GCA.extractCells();
+    document.getElementById('log').textContent =
+      'cells: ' + cells.length + '\n' +
+      'weeks: ' + window.GCA.weeks(cells) + '\n' +
+      'total (from counts): ' + window.GCA.totalContributions(cells) + '\n' +
+      'sample count parse: ' + JSON.stringify(cells.find(c=>c.count>0)) + '\n' +
+      'games registered: ' + window.GCA.games.map(g=>g.id).join(', ') + '\n' +
+      'launch bar: ' + !!document.querySelector('.gca-launch-bar');
+  }, 300));
+</script>
+</body>
+</html>
