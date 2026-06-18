@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "GitHub Contribution Arcade",
+  "name": "GitMinecraft",
   "version": "1.0.0",
   "description": "Turn any GitHub contribution graph into a Minecraft underground mine shaft. Your busiest days dig the deepest — iron, gold, lava.",
   "icons": {

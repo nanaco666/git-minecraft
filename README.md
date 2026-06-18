@@ -1,4 +1,4 @@
-# GitHub Contribution Minecraft ⛏️
+# GitMinecraft ⛏️
 
 把任意 GitHub 用户的**贡献图变成 Minecraft 地下矿井**。装上扩展，访问任何人的主页，贡献图上方点 **⛏️ Minecraft** 即可——你看谁的主页，就挖谁的矿。
 
@@ -10,7 +10,7 @@
 
 > 还没上架商店，先用开发者模式加载（一次性，之后一直在）。
 
-1. 到 [**Releases**](../../releases) 下载最新的 `github-contribution-arcade.zip` 并**解压**
+1. 到 [**Releases**](../../releases) 下载最新的 `git-minecraft.zip` 并**解压**
 2. 地址栏打开 `chrome://extensions`（Edge 用 `edge://extensions`）
 3. 打开右上角 **开发者模式 / Developer mode**
 4. 点 **加载已解压的扩展程序 / Load unpacked**，选刚解压出的文件夹
@@ -50,7 +50,7 @@ icons/  test/
 ## 开发 / 测试
 
 ```bash
-cd github-contribution-arcade
+cd git-minecraft
 python3 -m http.server 8733
 # 打开 http://localhost:8733/test/mock.html
 ```
