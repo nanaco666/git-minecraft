@@ -20,13 +20,13 @@
 
 ## 截图
 
-![Minecraft 矿井 — 实心矿柱](docs/screenshot-minecraft-core.png)
+![GitMinecraft — 挖开的贡献矿井](docs/screenshot-minecraft.png)
 
-*贡献越多，地下矿柱越长，直达岩浆层。右上角战利品面板自动累计采矿得分。*
+*没贡献的日子是平整草地，越忙的格子往下挖得越深，露出泥土→石头→铁矿→岩浆的地层。右上角战利品面板自动累计采矿得分。*
 
-![Minecraft 矿井 — 正面视角](docs/screenshot-minecraft-front.png)
+![GitMinecraft — 立体剖面](docs/screenshot-minecraft-angle.png)
 
-*正面视角：泥土→石头→铁矿→岩浆的完整地层剖面，鼠标拖拽 360° 旋转。*
+*换个角度看挖出的矿坑与地层剖面，底部岩浆发光。鼠标拖拽 360° 旋转 · 滚轮缩放。*
 
 ## 玩法
 

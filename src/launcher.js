@@ -10,11 +10,12 @@
   //                    overlay, fullscreen, fsBtns: [] }
   let s = null;
 
-  function mkBtn(txt, ghost) {
+  function mkFabBtn(txt, title) {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = 'gca-btn' + (ghost ? ' ghost' : '');
+    b.className = 'gca-fab-btn';
     b.textContent = txt;
+    b.title = title;
     return b;
   }
 
@@ -38,25 +39,18 @@
     if (!s.fullscreen) {
       const overlay = document.createElement('div');
       overlay.className = 'gca-overlay';
-      const head = document.createElement('div');
-      head.className = 'gca-overlay-head';
-      const title = document.createElement('div');
-      title.className = 'gca-overlay-title';
-      title.textContent = `${s.game.icon} ${s.game.label}`;
-      const spacer = document.createElement('div'); spacer.style.flex = '1';
-      const exitFs = mkBtn('⤢ 退出全屏', true);
-      const close = mkBtn('✕ 关闭', true);
-      exitFs.onclick = toggleFullscreen;
-      close.onclick = closeSession;
-      head.append(title, spacer, exitFs, close);
       const ostage = document.createElement('div');
       ostage.className = 'gca-stage';
-      overlay.append(head, ostage);
+      overlay.append(ostage);
       document.body.appendChild(overlay);
       ostage.appendChild(s.host); // move live node, preserve state
+      ostage.appendChild(s.fab);  // floating controls follow
+      s.fsBtn.textContent = '⤢'; s.fsBtn.title = '退出全屏';
       s.overlay = overlay; s.fullscreen = true;
     } else {
       s.inlineStage.appendChild(s.host); // move back
+      s.inlineStage.appendChild(s.fab);
+      s.fsBtn.textContent = '⛶'; s.fsBtn.title = '全屏';
       s.overlay.remove(); s.overlay = null; s.fullscreen = false;
     }
     if (s.controller && s.controller.fit) s.controller.fit();
@@ -76,30 +70,28 @@
     const inlineWrap = document.createElement('div');
     inlineWrap.className = 'gca-inline-wrap';
 
-    const toolbar = document.createElement('div');
-    toolbar.className = 'gca-toolbar';
-    const title = document.createElement('div');
-    title.className = 'gca-toolbar-title';
-    title.textContent = `${game.icon} ${game.label}`;
-    const spacer = document.createElement('div'); spacer.style.flex = '1';
-    const fsBtn = mkBtn('⛶ 全屏', true);
-    const exitBtn = mkBtn('✕ 退出', true);
-    fsBtn.onclick = toggleFullscreen;
-    exitBtn.onclick = closeSession;
-    toolbar.append(title, spacer, fsBtn, exitBtn);
-
     const inlineStage = document.createElement('div');
     inlineStage.className = 'gca-inline';
     const host = document.createElement('div');
     host.className = 'gca-game-host';
     inlineStage.appendChild(host);
 
-    inlineWrap.append(toolbar, inlineStage);
+    // controls float over the top-right corner of the canvas (no toolbar row)
+    const fab = document.createElement('div');
+    fab.className = 'gca-fab';
+    const fsBtn = mkFabBtn('⛶', '全屏');
+    const exitBtn = mkFabBtn('✕', '退出');
+    fsBtn.onclick = toggleFullscreen;
+    exitBtn.onclick = closeSession;
+    fab.append(fsBtn, exitBtn);
+    inlineStage.appendChild(fab);
+
+    inlineWrap.append(inlineStage);
     wrap.parentElement.insertBefore(inlineWrap, wrap);
     wrap.style.display = 'none';
 
     const controller = game.mount(host, cells, { onExit: closeSession });
-    s = { game, controller, wrap, inlineWrap, inlineStage, host, overlay: null, fullscreen: false };
+    s = { game, controller, wrap, inlineWrap, inlineStage, host, fab, fsBtn, overlay: null, fullscreen: false };
     document.addEventListener('keydown', onKey);
   }
 
@@ -118,10 +110,6 @@
 
     const bar = document.createElement('div');
     bar.className = 'gca-launch-bar';
-    const label = document.createElement('span');
-    label.className = 'gca-launch-label';
-    label.textContent = '🕹️ 把贡献图玩起来：';
-    bar.appendChild(label);
     GCA.games.forEach((game) => {
       const btn = document.createElement('button');
       btn.type = 'button';

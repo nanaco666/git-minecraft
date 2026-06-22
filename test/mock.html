@@ -4,7 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Mock GitHub Profile — Arcade test harness</title>
-<link rel="stylesheet" href="../styles.css" />
+<script>document.write('<link rel="stylesheet" href="../styles.css?t=' + Date.now() + '">');</script>
 <style>
   body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin: 24px; color: #1f2328; background:#fff; }
   h2 { font-size: 16px; font-weight: 600; }
@@ -52,9 +52,11 @@
     document.getElementById('heading').textContent = total+' contributions in the last year';
   })();
 </script>
-<script src="../src/extract.js"></script>
-<script src="../src/minecraft.js"></script>
-<script src="../src/launcher.js"></script>
+<script>
+  ['extract', 'minecraft', 'launcher'].forEach(function (n) {
+    document.write('<script src="../src/' + n + '.js?t=' + Date.now() + '"><\/script>');
+  });
+</script>
 <script>
   window.addEventListener('load', () => setTimeout(() => {
     const cells = window.GCA.extractCells();

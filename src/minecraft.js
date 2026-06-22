@@ -5,18 +5,23 @@
 (function () {
   'use strict';
 
+  // depth strata: index = layer dug. The deeper a busy day digs, the rarer the ore.
   const STRATA = [
-    { name: '草地', top: '#7cb342', side: '#5f8f2e', score: 0 },
-    { name: '泥土', top: '#9c6b4f', side: '#7a5238', score: 1 },
-    { name: '石头', top: '#aab4ba', side: '#828d93', score: 2 },
-    { name: '铁矿', top: '#c79a72', side: '#9c7649', score: 6 },
-    { name: '金矿', top: '#ffd54f', side: '#e0a200', glow: '#ffe082', score: 20 },
-    { name: '岩浆', top: '#ff7a3c', side: '#e2400f', glow: '#ffb74d', score: 60 }
+    { name: '草地', icon: '🌱', top: '#7cb342', side: '#5f8f2e', score: 0 },
+    { name: '泥土', icon: '🟫', top: '#9c6b4f', side: '#7a5238', score: 1 },
+    { name: '石头', icon: '🪨', top: '#9aa4ab', side: '#737d83', score: 1 },
+    { name: '煤矿', icon: '⚫', top: '#41464d', side: '#2b2f34', score: 2 },
+    { name: '铁矿', icon: '⛏️', top: '#d8b08c', side: '#a87f5c', score: 4 },
+    { name: '金矿', icon: '🪙', top: '#ffd54f', side: '#e0a200', glow: '#ffe082', score: 6 },
+    { name: '红石', icon: '🔴', top: '#e2453b', side: '#b02a22', glow: '#ff7a6e', score: 10 },
+    { name: '绿宝石', icon: '💚', top: '#27c24c', side: '#1a8f37', glow: '#6cf08a', score: 16 },
+    { name: '钻石', icon: '💎', top: '#52e0e8', side: '#27b3bd', glow: '#a6f4f8', score: 40 },
+    { name: '岩浆', icon: '🌋', top: '#ff7a3c', side: '#e2400f', glow: '#ffb74d', score: 0 }
   ];
-  const MINED = { name: '已采', top: '#3a3a3a', side: '#2c2c2c', score: 0 }; // emptied cell
-  const DEPTH = [0, 1, 2, 3, 5]; // level → layers dug down
-  const BASE = 5;                // total soil thickness
-  const LY = 0.82;               // world height per layer (x,z spacing = 1)
+  const MINED = { name: '已采', icon: '·', top: '#3a3a3a', side: '#2c2c2c', score: 0 }; // emptied cell
+  const DEPTH = [0, 3, 5, 7, 8]; // contribution level → how deep we dig → which ore (max = diamond)
+  const BASE = 9;                // total thickness; the deepest stratum (idx 9) is the lava layer
+  const LY = 0.6;                // world height per layer (x,z spacing = 1)
 
   function shade(hex, amt) {
     if (!amt) return hex;
@@ -38,37 +43,26 @@
     host.appendChild(canvas);
     const ctx = canvas.getContext('2d');
 
-    const legend = document.createElement('div');
-    legend.className = 'gmc-legend';
-    legend.innerHTML = '<b>越忙挖越深</b>' +
-      '<div class="row"><span class="sw" style="background:#7cb342"></span>0 地表</div>' +
-      '<div class="row"><span class="sw" style="background:#aab4ba"></span>1–2 泥/石</div>' +
-      '<div class="row"><span class="sw" style="background:#c79a72"></span>3 铁矿</div>' +
-      '<div class="row"><span class="sw" style="background:#ff7a3c"></span>4 直达岩浆</div>';
-    host.appendChild(legend);
-
+    // bottom-left tool buttons: only reset + screenshot (orbit = drag, zoom = wheel)
     const bar = document.createElement('div');
     bar.className = 'gmc-bar';
-    const mkBtn = (txt, title) => { const b = document.createElement('button'); b.className = 'gca-btn ghost'; b.textContent = txt; b.title = title; return b; };
-    const bRotL = mkBtn('⟲', '向左转'), bRotR = mkBtn('⟳', '向右转');
-    const bZin = mkBtn('＋', '放大'), bZout = mkBtn('－', '缩小'), bReset = mkBtn('⌂', '重置视角');
-    const bShot = document.createElement('button'); bShot.className = 'gca-btn'; bShot.textContent = '📸 截图分享';
-    bar.append(bRotL, bRotR, bZin, bZout, bReset, bShot);
+    const mkBtn = (txt, title) => { const b = document.createElement('button'); b.className = 'gmc-tool'; b.textContent = txt; b.title = title; return b; };
+    const bReset = mkBtn('⌂', '重置视角');
+    const bShot = mkBtn('📷', '截图分享');
+    bar.append(bReset, bShot);
     host.appendChild(bar);
     const tip = document.createElement('div'); tip.className = 'gmc-tip'; host.appendChild(tip);
 
+    // top loot HUD: horizontal resource bar (game-style earnings strip, no panel bg)
     const loot = document.createElement('div'); loot.className = 'gmc-loot';
     host.appendChild(loot);
     function renderLoot(hl) {
-      const order = ['泥土', '石头', '铁矿', '金矿', '岩浆'];
-      const have = order.filter((n) => state.loot[n]);
-      if (!have.length) { loot.innerHTML = '<b>🎒 战利品</b><div class="hint">开挖中…</div>'; return; }
-      const colorOf = (n) => (STRATA.find((s) => s.name === n) || MINED).top;
-      let rows = '';
-      have.forEach((n) => {
-        rows += `<div class="row${n === hl ? ' pop' : ''}"><span class="sw" style="background:${colorOf(n)}"></span><span class="nm">${n}</span><span class="n">${state.loot[n]}</span></div>`;
-      });
-      loot.innerHTML = `<b>🎒 战利品</b>${rows}<div class="score${hl ? ' pop' : ''}">⭐ ${state.score}</div>`;
+      const have = STRATA.filter((s) => state.loot[s.name]);
+      let chips = have.map((s) =>
+        `<span class="chip${s.name === hl ? ' pop' : ''}" title="${s.name}">${s.icon}<b>${state.loot[s.name]}</b></span>`
+      ).join('');
+      if (!have.length) chips = '<span class="chip hint">开挖中…</span>';
+      loot.innerHTML = chips + `<span class="score${hl ? ' pop' : ''}">⭐${state.score}</span>`;
     }
 
     const weeks = cells.reduce((m, c) => (c.week > m ? c.week : m), 0) + 1;
@@ -79,8 +73,8 @@
     const PITCH = { core: 0.4, pit: 0.6 }; // core needs a lower angle to reveal the columns
     const state = {
       cells: cells.map((c) => ({ x: c.week, z: c.dow, level: c.level, count: c.count, date: c.date })),
-      yaw: DEF.yaw, pitch: PITCH.core, S: 14, panX: 0, panY: 0, anim: 0, animStart: 0,
-      mode: 'core', // 'core' = solid ore columns, 'pit' = dug-out holes
+      yaw: DEF.yaw, pitch: PITCH.pit, S: 14, panX: 0, panY: 0, anim: 0, animStart: 0,
+      mode: 'pit', // dug-out holes: flat surface, busy days sink into the ground
       mined: new Set(), loot: {}, score: 0, fx: [] // collection system
     };
     const C = { x: (weeks - 1) / 2, z: 3, y: -BASE * LY / 2 };
@@ -195,15 +189,16 @@
       for (const f of state.fx) {
         const e = easeOut(Math.min(1, f.t));
         const x = f.x0 + (f.x1 - f.x0) * e;
-        const y = f.y0 + (f.y1 - f.y0) * e - Math.sin(Math.PI * Math.min(1, f.t)) * 42;
-        ctx.globalAlpha = f.t < 0.7 ? 1 : Math.max(0, 1 - (f.t - 0.7) / 0.3);
-        const sz = f.big ? 12 : 9;
+        const y = f.y0 + (f.y1 - f.y0) * e - Math.sin(Math.PI * Math.min(1, f.t)) * 30;
+        ctx.globalAlpha = f.t < 0.6 ? 1 : Math.max(0, 1 - (f.t - 0.6) / 0.4);
+        const sz = (f.big ? 10 : 7) * (1 - 0.35 * e); // shrink as it flies into the HUD
         if (f.glow) { ctx.shadowColor = f.glow; ctx.shadowBlur = 12; }
-        ctx.fillStyle = f.color; ctx.fillRect(x - sz / 2, y - sz / 2, sz, sz);
+        ctx.fillStyle = f.color;
+        ctx.beginPath();
+        if (ctx.roundRect) ctx.roundRect(x - sz / 2, y - sz / 2, sz, sz, 2.5);
+        else ctx.rect(x - sz / 2, y - sz / 2, sz, sz);
+        ctx.fill();
         ctx.shadowBlur = 0;
-        ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1; ctx.strokeRect(x - sz / 2, y - sz / 2, sz, sz);
-        ctx.fillStyle = '#fff'; ctx.font = `700 ${f.big ? 15 : 12}px -apple-system, sans-serif`; ctx.textBaseline = 'middle';
-        ctx.fillText(f.text, x + sz, y);
       }
       ctx.globalAlpha = 1; ctx.restore();
     }
@@ -215,7 +210,7 @@
       if (state.anim < 1) state.anim = Math.min(1, (now - state.animStart) / 1100);
       // auto-mine: once the shafts are dug, harvest the ore cell-by-cell
       if (state.anim >= 1 && state.queue.length) {
-        const n = Math.min(4, state.queue.length);
+        const n = Math.min(2, state.queue.length);
         let last;
         for (let i = 0; i < n; i++) { const nm = mineOne(state.queue.shift()); if (nm) last = nm; }
         if (last) renderLoot(last);
@@ -231,17 +226,18 @@
     function mineOne(cell) {
       if (!cell || cell.level === 0 || state.mined.has(cell)) return null;
       const mine = strataAt(DEPTH[cell.level]);
-      const amount = Math.max(1, cell.count != null ? cell.count : cell.level);
       state.mined.add(cell);
-      state.loot[mine.name] = (state.loot[mine.name] || 0) + amount;
-      state.score += mine.score * amount;
-      const topY = state.mode === 'core' ? 0 : -DEPTH[cell.level] * LY;
-      const p = project(cell.x, topY, cell.z, state.S);
-      state.fx.push({
-        x0: W() / 2 + state.panX + p.sx, y0: H() / 2 + state.panY + p.sy,
-        x1: W() - 64, y1: 58, t: 0, dur: 0.7,
-        color: mine.top, glow: mine.glow, big: !!mine.glow, text: '+' + amount
-      });
+      state.loot[mine.name] = (state.loot[mine.name] || 0) + 1; // one ore block per day — no inflation
+      state.score += mine.score;
+      // throttle the flying bits so they never pile up into a cluttered mess
+      if (state.fx.length < 16) {
+        const p = project(cell.x, -DEPTH[cell.level] * LY, cell.z, state.S);
+        state.fx.push({
+          x0: W() / 2 + state.panX + p.sx, y0: H() / 2 + state.panY + p.sy,
+          x1: W() / 2 + (Math.random() - 0.5) * 150, y1: 30, t: 0, dur: 0.9,
+          color: mine.top, glow: mine.glow, big: !!mine.glow
+        });
+      }
       return mine.name;
     }
 
@@ -289,10 +285,6 @@
     canvas.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
     canvas.addEventListener('wheel', onWheel, { passive: false });
 
-    bRotL.onclick = () => { state.yaw -= Math.PI / 8; draw(); };
-    bRotR.onclick = () => { state.yaw += Math.PI / 8; draw(); };
-    bZin.onclick = () => { state.S = Math.min(60, state.S * 1.2); draw(); };
-    bZout.onclick = () => { state.S = Math.max(3, state.S / 1.2); draw(); };
     bReset.onclick = () => { state.yaw = DEF.yaw; state.pitch = PITCH[state.mode]; fitView(); draw(); };
     bShot.onclick = () => {
       const banner = 64 * DPR;
@@ -317,6 +309,7 @@
     renderLoot();
     fitView(); resize(); startAnim();
     window.__GMC_ACTIVE__ = state;
+    window.__GMC_DRAW__ = draw;
     const ro = new ResizeObserver(() => resize());
     ro.observe(host);
 
