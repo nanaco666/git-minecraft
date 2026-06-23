@@ -1,68 +1,68 @@
 # GitMinecraft ⛏️
 
-把任意 GitHub 用户的**贡献图变成 Minecraft 地下矿井**。装上扩展，访问任何人的主页，贡献图上方点 **⛏️ Minecraft** 即可——你看谁的主页，就挖谁的矿。
+Turn any GitHub user's **contribution graph into a Minecraft underground mine**. Install the extension, visit anyone's profile, and click **⛏️ Minecraft** above the contribution graph — you mine whoever's profile you're viewing.
 
-没有贡献的日子是平整地表，越忙的日子往下挖得越深，挖穿泥土→石头→铁矿→金矿→**岩浆**。
+Days with no contributions are flat ground; the busier the day, the deeper you dig, uncovering layers from Dirt → Stone → Iron → Gold → **Lava**.
 
-> 数据直接从 GitHub 页面 DOM 读取——**不调第三方 API、无 CORS、不用输用户名**。
+> Data is read directly from the GitHub page DOM — **no third-party APIs, no CORS issues, no need to enter usernames**.
 
-## 🚀 安装（30 秒，Chrome / Edge / Brave / Arc）
+## 🚀 Installation (30 seconds, Chrome / Edge / Brave / Arc)
 
-> 还没上架商店，先用开发者模式加载（一次性，之后一直在）。
+> Not yet on the store; load via Developer Mode (one-time setup, stays active).
 
-1. 到 [**Releases**](../../releases) 下载最新的 `git-minecraft.zip` 并**解压**
-2. 地址栏打开 `chrome://extensions`（Edge 用 `edge://extensions`）
-3. 打开右上角 **开发者模式 / Developer mode**
-4. 点 **加载已解压的扩展程序 / Load unpacked**，选刚解压出的文件夹
-5. 打开任意 GitHub 主页（如 <https://github.com/torvalds>），点贡献图上方的 **⛏️ Minecraft**
+1. Go to [**Releases**](../../releases), download the latest `git-minecraft.zip`, and **extract** it.
+2. Open `chrome://extensions` in your address bar (use `edge://extensions` for Edge).
+3. Enable **Developer mode** in the top right corner.
+4. Click **Load unpacked** and select the extracted folder.
+5. Visit any GitHub profile (e.g., <https://github.com/torvalds>) and click **⛏️ Minecraft** above the contribution graph.
 
-完成后访问任何人的主页都能玩。卸载在 `chrome://extensions` 里移除。
+Once set up, it works on any profile. To uninstall, remove it via `chrome://extensions`.
 
-## 截图
+## Screenshots
 
-![GitMinecraft — 挖开的贡献矿井](docs/screenshot-minecraft.png)
+![GitMinecraft — Excavated Contribution Mine](docs/screenshot-minecraft.png)
 
-*没贡献的日子是平整草地，越忙的格子往下挖得越深，露出泥土→石头→铁矿→岩浆的地层。右上角战利品面板自动累计采矿得分。*
+*Days with no contributions are flat grass; busier cells dig deeper, revealing layers of Dirt → Stone → Iron → Lava. The Loot panel in the top right automatically tracks your mining score.*
 
-![GitMinecraft — 立体剖面](docs/screenshot-minecraft-angle.png)
+![GitMinecraft — 3D Cross-section](docs/screenshot-minecraft-angle.png)
 
-*换个角度看挖出的矿坑与地层剖面，底部岩浆发光。鼠标拖拽 360° 旋转 · 滚轮缩放。*
+*View the mine and geological cross-sections from different angles, with glowing lava at the bottom. Supports 360° drag rotation and scroll zooming.*
 
-## 玩法
+## How to Play
 
-点按钮后游戏**在贡献图原位内嵌打开**；点 **⛶ 全屏** 放大，**✕ 退出** 还原，`Esc` 关闭。
+Click the button to open the game **embedded directly in place of the contribution graph**. Click **⛶ Fullscreen** to expand, **✕ Exit** to restore, or press `Esc` to close.
 
-打开后**自动开采**：矿石逐个飞入右上「🎒 战利品」面板（金币收集感），⭐ 总分实时累加。  
-鼠标**拖拽旋转** · 滚轮缩放 · **📸 截图分享**带用户名水印。
+Once opened, **auto-mining** begins: ores fly one by one into the "🎒 Loot" panel (satisfying coin collection effect), and your ⭐ Total Score accumulates in real-time.  
+Supports **drag to rotate**, scroll to zoom, and **📸 Screenshot sharing** with username watermarks.
 
-## 架构
+## Architecture
 
 ```
-manifest.json   # MV3，注入 https://github.com/*
+manifest.json   # MV3, injected into https://github.com/*
 src/
-  extract.js    # 读 DOM 贡献图 → cells（date / level / count / week / dow）
-  minecraft.js  # 等距体素引擎 + 自动采矿，自注册到 GCA.games
-  launcher.js   # 注入按钮条 + 全屏 overlay 框架
-styles.css      # gca-* 共享 + gmc-* 体素
+  extract.js    # Reads DOM contribution graph → cells (date / level / count / week / dow)
+  minecraft.js  # Isometric voxel engine + auto-mining, self-registered to GCA.games
+  launcher.js   # Injects button bar + fullscreen overlay framework
+styles.css      # gca-* shared + gmc-* voxels
 icons/  test/
 ```
 
-## 开发 / 测试
+## Development / Testing
 
 ```bash
 cd git-minecraft
 python3 -m http.server 8733
-# 打开 http://localhost:8733/test/mock.html
+# Open http://localhost:8733/test/mock.html
 ```
 
-`test/mock.html` 构造完整 53 周贡献图，验证数据提取和 Minecraft 挂载/卸载。
+`test/mock.html` constructs a full 53-week contribution graph to verify data extraction and Minecraft mounting/unmounting.
 
 ## Roadmap
 
-- [ ] 上架 Chrome Web Store / Firefox Add-ons
-- [ ] **🎵 旋律玩法**：每列当节拍、level 当音高，"播放"你的一年
-- [ ] 方块真实材质贴图
-- [ ] 分享卡片多模板
+- [ ] Publish to Chrome Web Store / Firefox Add-ons
+- [ ] **🎵 Melodic Gameplay**: Use columns as beats and levels as pitches to "play" your year
+- [ ] Realistic block textures
+- [ ] Multiple templates for sharing cards
 
 ## License
 
